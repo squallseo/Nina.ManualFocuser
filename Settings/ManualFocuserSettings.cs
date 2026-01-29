@@ -7,6 +7,7 @@ namespace Nina.ManualFocuser.Settings
     public sealed class ManualFocuserSettings
     {
         public int Step { get; set; } = 100;
+        public bool AutoOpenDockOnce { get; set; } = true;
     }
 
     public static class ManualFocuserSettingsStore
@@ -57,5 +58,6 @@ namespace Nina.ManualFocuser.Settings
                 // 저장 실패해도 플러그인 죽이면 안 되므로 무시
             }
         }
+
     }
 }

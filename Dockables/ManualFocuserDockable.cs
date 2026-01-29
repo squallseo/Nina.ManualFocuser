@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Nina.ManualFocuser.Settings;
+using Nina.ManualFocuser.ViewModels;
+using Nina.ManualFocuser.Views;
+using NINA.Equipment.Interfaces.ViewModel;
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
@@ -6,9 +10,6 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using NINA.Equipment.Interfaces.ViewModel;
-using Nina.ManualFocuser.ViewModels;
-using Nina.ManualFocuser.Views;
 
 namespace Nina.ManualFocuser.Dockables
 {
@@ -28,7 +29,7 @@ namespace Nina.ManualFocuser.Dockables
         public bool IsTool { get; set; } = true;
         public bool HasSettings { get; set; } = false;
         public bool CanClose { get; set; } = true;
-
+        public bool AutoOpenDockOnce { get; set; } = true;
         public GeometryGroup ImageGeometry { get; set; } = CreateFrozenGeometry();
 
         private static GeometryGroup CreateFrozenGeometry()
@@ -50,6 +51,28 @@ namespace Nina.ManualFocuser.Dockables
             return g;
         }
 
+        private void TryAutoOpenOnce()
+        {
+            // settings store는 이미 프로젝트에 있으니, 거기서 bool 하나만 저장한다고 가정
+            var settings = ManualFocuserSettingsStore.Load();
+            if (!settings.AutoOpenDockOnce) return;
+
+            settings.AutoOpenDockOnce = false;
+            ManualFocuserSettingsStore.Save(settings);
+
+            // UI 스레드에서 "열기"를 요청
+            Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EnsureViewOnUIThread();
+
+                IsClosed = false;
+                IsVisible = true;
+
+                OnPropertyChanged(nameof(IsClosed));
+                OnPropertyChanged(nameof(IsVisible));
+                OnPropertyChanged(nameof(Content));
+            }));
+        }
 
         public ICommand HideCommand { get; set; }
         public ICommand ToggleSettingsCommand { get; set; }
@@ -68,6 +91,7 @@ namespace Nina.ManualFocuser.Dockables
 
             HideCommand = new SimpleDockCommand(_ => ToggleVisibility());
             ToggleSettingsCommand = new SimpleDockCommand(_ => { /* no settings */ });
+            TryAutoOpenOnce();
         }
 
         public void Hide(object? _)

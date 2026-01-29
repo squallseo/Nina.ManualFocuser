@@ -1,264 +1,215 @@
 ﻿<UserControl x:Class="Nina.ManualFocuser.Views.ManualFocuserPanelView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d">
-     
-   
-    <UserControl.Resources>
-         
-       
-        <!-- NINA에 기본으로 존재하는 컨버터들:
-             - BooleanToVisibilityCollapsedConverter
-             - InverseBooleanConverter
-        -->
-         
-       
-        <!-- In 버튼: MoveIn <-> Stop 토글 (NINA 버튼 스타일 유지) -->
-               
-        <Style x:Key="MoveInStopButtonStyle" TargetType="Button" BasedOn="{StaticResource StandardButton}">
-                       
-            <Setter Property="Content" Value="In (-)"/>
-                       
-            <Setter Property="Command" Value="{Binding PanelVM.MoveInCommand}"/>
-                       
-            <Setter Property="IsEnabled" Value="{Binding PanelVM.MoveInEnabled}"/>
-                       
-            <Style.Triggers>
-                               
-                <DataTrigger Binding="{Binding PanelVM.IsMoveInStop}" Value="True">
-                                       
-                    <Setter Property="Content" Value="Stop"/>
-                                       
-                    <Setter Property="Command" Value="{Binding PanelVM.StopCommand}"/>
-                                       
-                    <Setter Property="IsEnabled" Value="True"/>
-                                   
-                </DataTrigger>
-                           
-            </Style.Triggers>
-                   
-        </Style>
-         
-       
-        <!-- Out 버튼: MoveOut <-> Stop 토글 -->
-               
-        <Style x:Key="MoveOutStopButtonStyle" TargetType="Button" BasedOn="{StaticResource StandardButton}">
-                       
-            <Setter Property="Content" Value="Out (+)"/>
-                       
-            <Setter Property="Command" Value="{Binding PanelVM.MoveOutCommand}"/>
-                       
-            <Setter Property="IsEnabled" Value="{Binding PanelVM.MoveOutEnabled}"/>
-                       
-            <Style.Triggers>
-                               
-                <DataTrigger Binding="{Binding PanelVM.IsMoveOutStop}" Value="True">
-                                       
-                    <Setter Property="Content" Value="Stop"/>
-                                       
-                    <Setter Property="Command" Value="{Binding PanelVM.StopCommand}"/>
-                                       
-                    <Setter Property="IsEnabled" Value="True"/>
-                                   
-                </DataTrigger>
-                           
-            </Style.Triggers>
-                   
-        </Style>
-         
-       
-        <!-- Go 버튼: Go <-> Stop 토글 -->
-               
-        <Style x:Key="GoStopButtonStyle" TargetType="Button" BasedOn="{StaticResource StandardButton}">
-                       
-            <Setter Property="Content" Value="Go"/>
-                       
-            <Setter Property="Command" Value="{Binding PanelVM.GoToCommand}"/>
-                       
-            <Setter Property="IsEnabled" Value="{Binding PanelVM.GoEnabled}"/>
-                       
-            <Style.Triggers>
-                               
-                <DataTrigger Binding="{Binding PanelVM.IsGoStop}" Value="True">
-                                       
-                    <Setter Property="Content" Value="Stop"/>
-                                       
-                    <Setter Property="Command" Value="{Binding PanelVM.StopCommand}"/>
-                                       
-                    <Setter Property="IsEnabled" Value="True"/>
-                                   
-                </DataTrigger>
-                           
-            </Style.Triggers>
-                   
-        </Style>
-         
-   
-    </UserControl.Resources>
-     
-   
-    <!-- DataContext는 Dockable, Dockable 안에 PanelVM이 있다고 가정 -->
-       
-    <Grid Margin="12">
-               
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignHeight="350" d:DesignWidth="520">
+
+    <Grid Margin="16">
         <Grid.RowDefinitions>
-                       
             <RowDefinition Height="Auto"/>
-                       
             <!-- Title -->
-                       
             <RowDefinition Height="Auto"/>
-                       
-            <!-- Moving row -->
-                       
+            <!-- Connected Row (only when disconnected) -->
             <RowDefinition Height="Auto"/>
-                       
-            <!-- Position/Temperature -->
-                       
+            <!-- Moving Row (only when connected) -->
             <RowDefinition Height="Auto"/>
-                       
-            <!-- Target + Go -->
-                       
+            <!-- Position / Temperature -->
             <RowDefinition Height="Auto"/>
-                       
+            <!-- Absolute Move -->
+            <RowDefinition Height="Auto"/>
             <!-- Step -->
-                       
             <RowDefinition Height="Auto"/>
-                       
-            <!-- Buttons -->
-                       
+            <!-- In / Out -->
             <RowDefinition Height="Auto"/>
-                       
             <!-- Status -->
-                       
             <RowDefinition Height="*"/>
-                   
         </Grid.RowDefinitions>
-         
-       
+
         <!-- Title -->
-               
         <TextBlock Grid.Row="0"
-                   Text="Manual Focuser Input"
-                   FontSize="22"
-                   FontWeight="SemiBold"
-                   Margin="0,0,0,12"/>
- 
-        <!-- Moving -->
-        <Grid Grid.Row="1" Margin="0,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="28"/>
-            </Grid.ColumnDefinitions>
- 
-            <TextBlock Text="Moving" Opacity="0.85" VerticalAlignment="Center"/>
- 
-            <!-- 아이콘은 일단 단순히 X/체크 SVG로 -->
-            <ContentControl Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <ContentControl.Style>
-                    <Style TargetType="ContentControl">
-                        <Setter Property="Content">
-                            <Setter.Value>
-                                <Viewbox Width="18" Height="18">
-                                    <Path Data="{StaticResource CancelCircledSVG}" Stretch="Uniform"/>
-                                </Viewbox>
-                            </Setter.Value>
-                        </Setter>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding PanelVM.IsMoving}" Value="True">
-                                <Setter Property="Content">
-                                    <Setter.Value>
-                                        <Viewbox Width="18" Height="18">
-                                            <Path Data="{StaticResource CheckedCircledSVG}" Stretch="Uniform"/>
-                                        </Viewbox>
-                                    </Setter.Value>
-                                </Setter>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </ContentControl.Style>
-            </ContentControl>
-        </Grid>
- 
-        <!-- Position / Temperature -->
-        <Grid Grid.Row="2" Margin="0,0,0,8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="16"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
- 
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Position" Opacity="0.85"/>
-                <TextBlock Text="{Binding PanelVM.PositionText}" FontSize="18" FontWeight="SemiBold"/>
-            </StackPanel>
- 
-            <StackPanel Grid.Column="2" HorizontalAlignment="Left">
-                <TextBlock Text="Temperature" Opacity="0.85"/>
-                <TextBlock Text="{Binding PanelVM.TemperatureText}" FontSize="18" FontWeight="SemiBold"/>
-            </StackPanel>
-        </Grid>
- 
-        <!-- Target Position + Go -->
-        <Grid Grid.Row="3" Margin="0,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="120"/>
-            </Grid.ColumnDefinitions>
- 
-            <TextBox Grid.Column="0"
-                     Text="{Binding PanelVM.TargetPosition, UpdateSourceTrigger=PropertyChanged}"
-                     Style="{StaticResource StandardTextbox}"
-                     Height="32"
-                     VerticalContentAlignment="Center"/>
- 
-            <Button Grid.Column="2"
-                    Height="32"
-                    Style="{StaticResource GoStopButtonStyle}"/>
-        </Grid>
- 
-        <!-- Step -->
-        <Grid Grid.Row="4" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="80"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
- 
-            <TextBlock Text="Step" Opacity="0.85" VerticalAlignment="Center"/>
-            <TextBox Grid.Column="1"
-                     Text="{Binding PanelVM.Step, UpdateSourceTrigger=PropertyChanged}"
-                     Style="{StaticResource StandardTextbox}"
-                     Height="32"
-                     VerticalContentAlignment="Center"
-                     IsEnabled="{Binding PanelVM.IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
-        </Grid>
- 
-        <!-- Buttons -->
-        <Grid Grid.Row="5">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="16"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
- 
-            <Button Grid.Column="0"
-                    Height="40"
-                    Style="{StaticResource MoveInStopButtonStyle}"/>
- 
-            <Button Grid.Column="2"
-                    Height="40"
-                    Style="{StaticResource MoveOutStopButtonStyle}"/>
-        </Grid>
- 
-        <!-- Status -->
-        <TextBlock Grid.Row="6"
-                   Margin="0,10,0,0"
-                   Text="{Binding PanelVM.Status}"
-                   Opacity="0.9"
-                   TextWrapping="Wrap"/>
-    </Grid>
- 
+                   Text="Manual Focuser Input"
+                   FontSize="20"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,12"/>
+
+        <!-- Connected (show only when NOT connected) -->
+        <Grid Grid.Row="1"
+              Margin="0,0,0,10"
+              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Connected" Opacity="0.8" VerticalAlignment="Center"/>
+
+            <!-- Disconnected icon -->
+            <Border Grid.Column="1"
+                    Width="18" Height="18"
+                    CornerRadius="9"
+                    Background="#D9534F"
+                    VerticalAlignment="Center">
+                <TextBlock Text="✖"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Foreground="White"/>
+            </Border>
+        </Grid>
+
+        <!-- Moving (show only when connected) -->
+        <Grid Grid.Row="1"
+              Margin="0,0,0,10"
+              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Moving" Opacity="0.8" VerticalAlignment="Center"/>
+
+            <!-- Moving icon (simple): green when not moving, gray X when moving false? -->
+            <!-- 여기서는 사용자가 원했던 'moving일 때 아이콘 변화'를 위해
+                 IsMoving true면 ●(초록), false면 ✖(회색) 형태로 처리 -->
+            <Border Grid.Column="1"
+                    Width="18" Height="18"
+                    CornerRadius="9"
+                    VerticalAlignment="Center">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="#6C757D"/>
+                        <!-- default: gray -->
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding PanelVM.IsMoving}" Value="True">
+                                <Setter Property="Background" Value="#D9534F"/>
+                                <!-- moving: red -->
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+
+                <TextBlock HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="11"
+                           Foreground="White">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Text" Value="✖"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PanelVM.IsMoving}" Value="True">
+                                    <Setter Property="Text" Value="●"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Border>
+        </Grid>
+
+        <!-- Position / Temperature -->
+        <Grid Grid.Row="2" Margin="0,6,0,8"
+              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Position" Opacity="0.7"/>
+                <TextBlock Text="{Binding PanelVM.PositionText}"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="Temperature" Opacity="0.7"/>
+                <TextBlock Text="{Binding PanelVM.TemperatureText}"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Margin="0,2,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Absolute Move (Go) -->
+        <Grid Grid.Row="3" Margin="0,0,0,10"
+              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0"
+                     Height="32"
+                     VerticalContentAlignment="Center"
+                     Margin="0,0,10,0"
+                     Text="{Binding PanelVM.TargetPosition, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Button Grid.Column="1"
+                    Height="32"
+                    Content="Go"
+                    Command="{Binding PanelVM.GoToCommand}"/>
+        </Grid>
+
+        <!-- Step -->
+        <Grid Grid.Row="4" Margin="0,0,0,10"
+              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
+                       Text="Step"
+                       Opacity="0.7"
+                       Margin="0,0,0,4"/>
+
+            <TextBox Grid.Row="1"
+                     Height="32"
+                     VerticalContentAlignment="Center"
+                     Text="{Binding PanelVM.Step, UpdateSourceTrigger=PropertyChanged}"/>
+        </Grid>
+
+        <!-- In / Out Buttons -->
+        <Grid Grid.Row="5"
+              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0"
+                    Height="40"
+                    Margin="0,0,8,0"
+                    Content="In (-)"
+                    Command="{Binding PanelVM.MoveInCommand}"/>
+
+            <Button Grid.Column="1"
+                    Height="40"
+                    Margin="8,0,0,0"
+                    Content="Out (+)"
+                    Command="{Binding PanelVM.MoveOutCommand}"/>
+        </Grid>
+
+        <!-- Status (always show) -->
+        <TextBlock Grid.Row="6"
+                   Margin="0,10,0,0"
+                   TextWrapping="Wrap"
+                   Opacity="0.85"
+                   Text="{Binding PanelVM.Status}"/>
+
+        <!-- Disconnected Help Text -->
+        <Border Grid.Row="2"
+                Margin="0,6,0,0"
+                Padding="10"
+                CornerRadius="6"
+                Background="#1FFFFFFF"
+                Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+            <TextBlock Text="Focuser not connected. Connect a focuser in Equipment → Focuser."
+                       Opacity="0.9"/>
+        </Border>
+
+    </Grid>
 </UserControl>

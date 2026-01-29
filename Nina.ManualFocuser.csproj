@@ -1,14 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net8.0-windows7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-	  <UseWPF>true</UseWPF>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
-  </ItemGroup>
-
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
+	</ItemGroup>
+	<Target Name="PostBuildCopyToNina" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+		<PropertyGroup>
+			<NinaPluginDir> $(LOCALAPPDATA)\NINA\Plugins\3.0.0\Nina.ManualFocuser\ </NinaPluginDir>
+		</PropertyGroup>
+		<MakeDir Directories="$(NinaPluginDir)" />
+		<!-- 프로젝트 산출물만 복사 -->
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(NinaPluginDir)" SkipUnchangedFiles="true" />
+		<Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(NinaPluginDir)" SkipUnchangedFiles="true" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+	</Target>
 </Project>
