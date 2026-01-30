@@ -243,6 +243,8 @@ namespace Nina.ManualFocuser.ViewModels
             SetStatus("Stop not supported");
             return Task.CompletedTask;
         }
+        private int _movingFalseStreak = 0;
+        private const int MovingFalseStreakThreshold = 2; // 2틱(=1초) 연속 false면 멈춤으로 인정
 
         private void RefreshStateSafeUI()
         {
@@ -250,10 +252,39 @@ namespace Nina.ManualFocuser.ViewModels
             {
                 var device = TryGetDeviceViaGetDevice(_focuserMediator);
                 IsConnected = device != null;
-                var movingFromDevice = device != null && (TryReadBoolProperty(device, "IsMoving", "Moving", "IsBusy") == true);
-                var movingFromMediator = TryReadBoolProperty(_focuserMediator, "IsMoving", "Moving", "IsBusy") == true;
 
-                IsMoving = movingFromDevice || movingFromMediator;
+                // Moving
+                var movingNow =
+                    (device != null && TryReadBoolProperty(device, "IsMoving", "Moving", "IsBusy") == true)
+                    || (TryReadBoolProperty(_focuserMediator, "IsMoving", "Moving", "IsBusy") == true);
+
+                // ✅ 우리 액션 수행 중이면 "한 번의 false"로는 끄지 않기
+                if (ActiveAction != FocuserAction.None)
+                {
+                    if (movingNow)
+                    {
+                        _movingFalseStreak = 0;
+                        IsMoving = true;
+                    }
+                    else
+                    {
+                        _movingFalseStreak++;
+                        if (_movingFalseStreak >= MovingFalseStreakThreshold)
+                        {
+                            IsMoving = false;
+                        }
+                        else
+                        {
+                            IsMoving = true; // 아직은 true 유지(깜빡임 방지)
+                        }
+                    }
+                }
+                else
+                {
+                    // 액션이 없으면 raw 그대로
+                    _movingFalseStreak = 0;
+                    IsMoving = movingNow;
+                }
 
                 // Position
                 Position = device != null ? TryReadIntProperty(device, "Position", "CurrentPosition") : null;
@@ -315,6 +346,8 @@ namespace Nina.ManualFocuser.ViewModels
         {
             try
             {
+                ActiveAction = FocuserAction.GoTo;
+
                 var device = TryGetDeviceViaGetDevice(_focuserMediator);
                 if (device == null)
                 {
@@ -328,19 +361,17 @@ namespace Nina.ManualFocuser.ViewModels
 
                 SetStatus("Done");
             }
-            catch (MissingMethodException ex)
-            {
-                SetStatus(ex.Message);
-            }
             catch (Exception ex)
             {
                 SetStatus($"Error: {ex.Message}");
             }
             finally
             {
+                ActiveAction = FocuserAction.None;
                 RefreshStateRequest();
             }
         }
+
         private async Task InvokeMoveAbsoluteAsync(int target)
         {
             var t = _focuserMediator.GetType();
@@ -426,6 +457,8 @@ namespace Nina.ManualFocuser.ViewModels
         {
             try
             {
+                ActiveAction = steps < 0 ? FocuserAction.MoveIn : FocuserAction.MoveOut;
+
                 var device = TryGetDeviceViaGetDevice(_focuserMediator);
                 if (device == null)
                 {
@@ -439,10 +472,6 @@ namespace Nina.ManualFocuser.ViewModels
 
                 SetStatus("Done");
             }
-            catch (MissingMethodException ex)
-            {
-                SetStatus(ex.Message);
-            }
             catch (Exception ex)
             {
                 SetStatus($"Error: {ex.Message}");
@@ -453,6 +482,7 @@ namespace Nina.ManualFocuser.ViewModels
                 RefreshStateRequest();
             }
         }
+
         private void SetStatus(string text)
         {
             var app = Application.Current;
@@ -618,6 +648,28 @@ namespace Nina.ManualFocuser.ViewModels
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
+    public class DesignTimeManualFocuserPanelVM
+    {
+        public bool IsConnected { get; set; } = true;
+        public bool IsMoving { get; set; } = true;
+
+        public int? Position { get; set; } = 1100;
+        public string PositionText => Position?.ToString() ?? "-";
+
+        public double? Temperature { get; set; } = -1.72;
+        public string TemperatureText => Temperature.HasValue ? $"{Temperature.Value:0.00} °C" : "-";
+
+        public int TargetPosition { get; set; } = 1000;
+        public int Step { get; set; } = 100;
+
+        public string Status { get; set; } = "Moving In (100)…";
+
+        // Stop UX 표시용
+        public bool IsBusy { get; set; } = true;
+        public bool IsMoveInActive { get; set; } = true;
+        public bool IsMoveOutActive { get; set; } = false;
+        public bool IsGoToActive { get; set; } = false;
+    }
     internal sealed class SimpleCommand : ICommand
     {
         private readonly Func<object?, Task> _executeAsync;

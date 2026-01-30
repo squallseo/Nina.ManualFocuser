@@ -3,41 +3,65 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:viewModels="clr-namespace:Nina.ManualFocuser.ViewModels"
              mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=viewModels:DesignTimeManualFocuserPanelVM, IsDesignTimeCreatable=True}"
              d:DesignHeight="350" d:DesignWidth="520">
 
-    <Grid Margin="16">
+    <UserControl.Resources>
+        <!-- Icons (vector) -->
+        <PathGeometry x:Key="MF_IconX" Figures="M 5,5 L 13,13 M 13,5 L 5,13"/>
+        <PathGeometry x:Key="MF_IconCheck" Figures="M 4.5,9.5 L 7.5,12.5 L 13.5,6.5"/>
+
+        <!-- Badge base -->
+        <Style x:Key="MF_Badge" TargetType="Border">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Icon stroke style -->
+        <Style x:Key="MF_BadgeIcon" TargetType="Path">
+            <Setter Property="StrokeThickness" Value="2"/>
+            <Setter Property="StrokeStartLineCap" Value="Round"/>
+            <Setter Property="StrokeEndLineCap" Value="Round"/>
+            <Setter Property="StrokeLineJoin" Value="Round"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="RenderOptions.EdgeMode" Value="Aliased"/>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Root -->
+    <Grid Margin="5" Grid.IsSharedSizeScope="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Title -->
+            <!-- Connected / Moving -->
             <RowDefinition Height="Auto"/>
-            <!-- Connected Row (only when disconnected) -->
+            <!-- Position / Temp -->
             <RowDefinition Height="Auto"/>
-            <!-- Moving Row (only when connected) -->
+            <!-- Target + Go -->
             <RowDefinition Height="Auto"/>
-            <!-- Position / Temperature -->
-            <RowDefinition Height="Auto"/>
-            <!-- Absolute Move -->
-            <RowDefinition Height="Auto"/>
-            <!-- Step -->
-            <RowDefinition Height="Auto"/>
-            <!-- In / Out -->
-            <RowDefinition Height="Auto"/>
-            <!-- Status -->
+            <!-- Step + In/Out -->
             <RowDefinition Height="*"/>
+            <!-- Status -->
         </Grid.RowDefinitions>
 
-        <!-- Title -->
-        <TextBlock Grid.Row="0"
-                   Text="Manual Focuser Input"
-                   FontSize="20"
-                   FontWeight="SemiBold"
-                   Margin="0,0,0,12"/>
+        <!-- ===================================== -->
+        <!-- Row 0: Connected (disconnected only)  -->
+        <!-- ===================================== -->
+        <Grid Grid.Row="0" Margin="0,0,0,5">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Visible"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding PanelVM.IsConnected}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
 
-        <!-- Connected (show only when NOT connected) -->
-        <Grid Grid.Row="1"
-              Margin="0,0,0,10"
-              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource InverseBoolToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -45,171 +69,321 @@
 
             <TextBlock Text="Connected" Opacity="0.8" VerticalAlignment="Center"/>
 
-            <!-- Disconnected icon -->
             <Border Grid.Column="1"
-                    Width="18" Height="18"
-                    CornerRadius="9"
-                    Background="#D9534F"
-                    VerticalAlignment="Center">
-                <TextBlock Text="✖"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           FontSize="11"
-                           Foreground="White"/>
+                    Margin="5,0,0,0"
+                    Style="{StaticResource MF_Badge}"
+                    Background="{DynamicResource NotificationErrorBrush}">
+                <Path Style="{StaticResource MF_BadgeIcon}"
+                      Stroke="{DynamicResource NotificationErrorTextBrush}"
+                      Data="{StaticResource MF_IconX}"/>
             </Border>
         </Grid>
 
-        <!-- Moving (show only when connected) -->
-        <Grid Grid.Row="1"
-              Margin="0,0,0,10"
-              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
+        <!-- ===================================== -->
+        <!-- Row 0: Is moving (connected only)     -->
+        <!-- ===================================== -->
+        <Grid Grid.Row="0" Margin="0,0,0,5">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding PanelVM.IsConnected}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Moving" Opacity="0.8" VerticalAlignment="Center"/>
+            <TextBlock Text="Is moving" Opacity="0.8" VerticalAlignment="Center"/>
 
-            <!-- Moving icon (simple): green when not moving, gray X when moving false? -->
-            <!-- 여기서는 사용자가 원했던 'moving일 때 아이콘 변화'를 위해
-                 IsMoving true면 ●(초록), false면 ✖(회색) 형태로 처리 -->
-            <Border Grid.Column="1"
-                    Width="18" Height="18"
-                    CornerRadius="9"
-                    VerticalAlignment="Center">
+            <!-- Badge -->
+            <Border Grid.Column="1" Margin="5,0,0,0">
                 <Border.Style>
-                    <Style TargetType="Border">
-                        <Setter Property="Background" Value="#6C757D"/>
-                        <!-- default: gray -->
+                    <Style TargetType="Border" BasedOn="{StaticResource MF_Badge}">
+                        <Setter Property="Background" Value="{DynamicResource ButtonForegroundDisabledBrush}"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding PanelVM.IsMoving}" Value="True">
-                                <Setter Property="Background" Value="#D9534F"/>
-                                <!-- moving: red -->
+                                <Setter Property="Background" Value="{DynamicResource NotificationErrorBrush}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
 
-                <TextBlock HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           FontSize="11"
-                           Foreground="White">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Text" Value="✖"/>
+                <Path>
+                    <Path.Style>
+                        <Style TargetType="Path" BasedOn="{StaticResource MF_BadgeIcon}">
+                            <Setter Property="Stroke" Value="{DynamicResource ButtonForegroundBrush}"/>
+                            <Setter Property="Data" Value="{StaticResource MF_IconX}"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding PanelVM.IsMoving}" Value="True">
-                                    <Setter Property="Text" Value="●"/>
+                                    <Setter Property="Stroke" Value="{DynamicResource NotificationErrorTextBrush}"/>
+                                    <Setter Property="Data" Value="{StaticResource MF_IconCheck}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                    </Path.Style>
+                </Path>
             </Border>
         </Grid>
 
-        <!-- Position / Temperature -->
-        <Grid Grid.Row="2" Margin="0,6,0,8"
-              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
+        <!-- ===================================== -->
+        <!-- Row 1: Position / Temperature          -->
+        <!-- ===================================== -->
+        <Grid Grid.Row="1" Margin="0,0,0,5">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding PanelVM.IsConnected}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0">
+            <StackPanel Grid.Column="0" Margin="0,0,5,0">
                 <TextBlock Text="Position" Opacity="0.7"/>
                 <TextBlock Text="{Binding PanelVM.PositionText}"
-                           FontSize="16"
+                           FontSize="12"
                            FontWeight="SemiBold"
-                           Margin="0,2,0,0"/>
+                           Margin="0,5,0,0"/>
             </StackPanel>
 
-            <StackPanel Grid.Column="1">
+            <StackPanel Grid.Column="1" Margin="5,0,0,0">
                 <TextBlock Text="Temperature" Opacity="0.7"/>
                 <TextBlock Text="{Binding PanelVM.TemperatureText}"
-                           FontSize="16"
+                           FontSize="12"
                            FontWeight="SemiBold"
-                           Margin="0,2,0,0"/>
+                           Margin="0,5,0,0"/>
             </StackPanel>
         </Grid>
 
-        <!-- Absolute Move (Go) -->
-        <Grid Grid.Row="3" Margin="0,0,0,10"
-              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
+        <!-- ===================================== -->
+        <!-- Row 2: Target + Go/Stop                -->
+        <!-- ===================================== -->
+        <Grid Grid.Row="2" Margin="0,0,0,5">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding PanelVM.IsConnected}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="LabelCol"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBox Grid.Column="0"
+            <TextBlock Grid.Column="0"
+                       Text="Target"
+                       Opacity="0.7"
+                       VerticalAlignment="Center"
+                       Margin="0,0,5,0"/>
+
+            <TextBox Grid.Column="1"
                      Height="32"
+                     MinWidth="90"
                      VerticalContentAlignment="Center"
-                     Margin="0,0,10,0"
+                     Margin="0,0,5,0"
                      Text="{Binding PanelVM.TargetPosition, UpdateSourceTrigger=PropertyChanged}"/>
 
-            <Button Grid.Column="1"
-                    Height="32"
-                    Content="Go"
-                    Command="{Binding PanelVM.GoToCommand}"/>
+            <!-- Normal Go (hidden when GoTo active), disabled when any busy -->
+            <Grid Grid.Column="2">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Setter Property="IsEnabled" Value="True"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding PanelVM.IsGoToActive}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding PanelVM.IsBusy}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+
+                <Button Height="32"
+                        MinWidth="64"
+                        Padding="12,0"
+                        Content="Go"
+                        Command="{Binding PanelVM.GoToCommand}"/>
+            </Grid>
+
+            <!-- Stop (visible only when GoTo active) -->
+            <Grid Grid.Column="2">
+                <Grid.Style>
+                    <Style TargetType="Grid">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding PanelVM.IsGoToActive}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Grid.Style>
+
+                <Button Height="32"
+                        MinWidth="64"
+                        Padding="12,0"
+                        Content="✕"
+                        Command="{Binding PanelVM.StopCommand}"/>
+            </Grid>
         </Grid>
 
-        <!-- Step -->
-        <Grid Grid.Row="4" Margin="0,0,0,10"
-              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <!-- ===================================== -->
+        <!-- Row 3: Step + In/Out (each with Stop)  -->
+        <!-- ===================================== -->
+        <Grid Grid.Row="3" Margin="0,0,0,5">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding PanelVM.IsConnected}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
 
-            <TextBlock Grid.Row="0"
-                       Text="Step"
-                       Opacity="0.7"
-                       Margin="0,0,0,4"/>
-
-            <TextBox Grid.Row="1"
-                     Height="32"
-                     VerticalContentAlignment="Center"
-                     Text="{Binding PanelVM.Step, UpdateSourceTrigger=PropertyChanged}"/>
-        </Grid>
-
-        <!-- In / Out Buttons -->
-        <Grid Grid.Row="5"
-              Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource VisibilityConverter}}">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="LabelCol"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0"
-                    Height="40"
-                    Margin="0,0,8,0"
-                    Content="In (-)"
-                    Command="{Binding PanelVM.MoveInCommand}"/>
+            <TextBlock Grid.Column="0"
+                       Text="Step"
+                       Opacity="0.7"
+                       VerticalAlignment="Center"
+                       Margin="0,0,5,0"/>
 
-            <Button Grid.Column="1"
-                    Height="40"
-                    Margin="8,0,0,0"
-                    Content="Out (+)"
-                    Command="{Binding PanelVM.MoveOutCommand}"/>
+            <TextBox Grid.Column="1"
+                     Height="32"
+                     MinWidth="90"
+                     VerticalContentAlignment="Center"
+                     Margin="0,0,5,0"
+                     Text="{Binding PanelVM.Step, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <Grid Grid.Column="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ===== In normal (disabled when busy, hidden when MoveIn active) ===== -->
+                <Grid Grid.Column="0" Margin="0,0,5,0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Setter Property="IsEnabled" Value="True"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PanelVM.IsMoveInActive}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding PanelVM.IsBusy}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Button Height="32"
+                            MinWidth="78"
+                            Padding="12,0"
+                            Content="In (-)"
+                            Command="{Binding PanelVM.MoveInCommand}"/>
+                </Grid>
+
+                <!-- ===== In stop (visible only when MoveIn active) ===== -->
+                <Grid Grid.Column="0" Margin="0,0,5,0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PanelVM.IsMoveInActive}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Button Height="32"
+                            MinWidth="78"
+                            Padding="12,0"
+                            Content="✕"
+                            Command="{Binding PanelVM.StopCommand}"/>
+                </Grid>
+
+                <!-- ===== Out normal (disabled when busy, hidden when MoveOut active) ===== -->
+                <Grid Grid.Column="1">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Setter Property="IsEnabled" Value="True"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PanelVM.IsMoveOutActive}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding PanelVM.IsBusy}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Button Height="32"
+                            MinWidth="78"
+                            Padding="12,0"
+                            Content="Out (+)"
+                            Command="{Binding PanelVM.MoveOutCommand}"/>
+                </Grid>
+
+                <!-- ===== Out stop (visible only when MoveOut active) ===== -->
+                <Grid Grid.Column="1">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PanelVM.IsMoveOutActive}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+
+                    <Button Height="32"
+                            MinWidth="78"
+                            Padding="12,0"
+                            Content="✕"
+                            Command="{Binding PanelVM.StopCommand}"/>
+                </Grid>
+            </Grid>
         </Grid>
 
-        <!-- Status (always show) -->
-        <TextBlock Grid.Row="6"
-                   Margin="0,10,0,0"
+        <!-- ===================================== -->
+        <!-- Row 4: Status                          -->
+        <!-- ===================================== -->
+        <TextBlock Grid.Row="4"
+                   Margin="0,0,0,0"
                    TextWrapping="Wrap"
                    Opacity="0.85"
                    Text="{Binding PanelVM.Status}"/>
-
-        <!-- Disconnected Help Text -->
-        <Border Grid.Row="2"
-                Margin="0,6,0,0"
-                Padding="10"
-                CornerRadius="6"
-                Background="#1FFFFFFF"
-                Visibility="{Binding PanelVM.IsConnected, Converter={StaticResource InverseBoolToVisibilityConverter}}">
-            <TextBlock Text="Focuser not connected. Connect a focuser in Equipment → Focuser."
-                       Opacity="0.9"/>
-        </Border>
-
     </Grid>
 </UserControl>

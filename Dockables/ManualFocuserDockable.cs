@@ -24,7 +24,23 @@ namespace Nina.ManualFocuser.Dockables
         public string Title { get; set; } = "Manual Focuser Input";
         public string ContentId { get; set; } = "Nina.ManualFocuser.Dockable";
 
-        public bool IsVisible { get; set; } = true;
+        private bool _isVisible = true;
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                if (_isVisible == value) return;
+                _isVisible = value;
+                OnPropertyChanged();
+
+                if (_isVisible)
+                {
+                    Application.Current?.Dispatcher.BeginInvoke(new Action(EnsureViewOnUIThread));
+                }
+            }
+        }
+
         public bool IsClosed { get; set; } = false;
         public bool IsTool { get; set; } = true;
         public bool HasSettings { get; set; } = false;
@@ -91,6 +107,9 @@ namespace Nina.ManualFocuser.Dockables
 
             HideCommand = new SimpleDockCommand(_ => ToggleVisibility());
             ToggleSettingsCommand = new SimpleDockCommand(_ => { /* no settings */ });
+            // 핵심: 초기 IsVisible=true면 Content도 미리 준비
+            if (IsVisible)
+                Application.Current?.Dispatcher.BeginInvoke(new Action(EnsureViewOnUIThread));
             TryAutoOpenOnce();
         }
 
