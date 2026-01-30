@@ -1,3 +1,4 @@
+![Manual Focuser](Images/logo.png)
 Manual Focuser Input for N.I.N.A.
 
 In N.I.N.A., the default focuser controls in the Imaging tab use the relative step size defined in the Autofocus settings.
