@@ -50,13 +50,12 @@ namespace Nina.ManualFocuser.Dockables
 
         private static GeometryGroup CreateFrozenGeometry()
         {
-            // 간단한 "포커서" 느낌 아이콘 (원형 + 축)
-            var g = new GeometryGroup();
+            var g = new GeometryGroup();
 
             // 원(렌즈)
             g.Children.Add(Geometry.Parse("M 8,0 A 8,8 0 1 1 7.999,0 Z"));
             // 가운데 점
-            g.Children.Add(Geometry.Parse("M 9,8 A 1,1 0 1 1 8.999,8 Z"));
+            g.Children.Add(Geometry.Parse("M 9,8 A 2.1,2.1 0 1 1 8.999,8 Z"));
             // 아래 축(막대)
             g.Children.Add(Geometry.Parse("M 7,16 L 9,16 L 9,24 L 7,24 Z"));
             // 좌우 작은 핸들
@@ -66,6 +65,7 @@ namespace Nina.ManualFocuser.Dockables
             g.Freeze();
             return g;
         }
+
 
         private void TryAutoOpenOnce()
         {
