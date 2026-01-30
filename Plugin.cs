@@ -14,13 +14,13 @@ namespace Nina.ManualFocuser
     {
         public string Name => "Manual Focuser Input";
         public string Identifier => "Nina.ManualFocuser";
-        public string Author => "hrpdev";
+        public string Author => "cwseo-서충원/별하늘지기[충탱]";
 
         public string License => "MIT";
         public string LicenseURL => "";
 
-        public string Homepage => "";
-        public string Repository => "";
+        public string Homepage => "https://github.com/squallseo/Nina.ManualFocuser/blob/master/README.md";
+        public string Repository => "https://github.com/squallseo/Nina.ManualFocuser";
         public string ChangelogURL => "";
 
         public string[] Tags => new[] { "focuser", "manual", "ui" };
@@ -31,12 +31,15 @@ namespace Nina.ManualFocuser
         public IPluginInstallerDetails Installer => new EmptyInstallerDetails();
 
         public IPluginDescription Descriptions => new SimpleDescription(
-        shortDescription: "Manual focuser controls with direct input.",
-        longDescription: "Adds a dockable panel that allows entering absolute position and relative step values for focuser movement.",
-        featuredImageUrl: "",
-        screenshotUrl: "",
-        altScreenshotUrl: ""
+            shortDescription: "Manual focuser controls with direct input.",
+            longDescription: "This plugin adds a dockable panel that allows users to enter absolute position and relative step values for focuser movement.\n\n" +
+                             "For detailed instructions and features, visit the [GitHub Repository](https://github.com/squallseo/Nina.ManualFocuser)\n" +
+                             "Check out the [Changelog](https://github.com/squallseo/Nina.ManualFocuser/blob/master/CHANGELOG.md) for updates.",
+            featuredImageUrl: "https://github.com/squallseo/Nina.ManualFocuser/blob/master/Images/logo.png",
+            screenshotUrl: "https://github.com/squallseo/Nina.ManualFocuser/blob/master/Screenshots/idle.png",
+            altScreenshotUrl: "https://github.com/squallseo/Nina.ManualFocuser/blob/master/Screenshots/moving.png"
         );
+
 
         public Task Initialize()
         {

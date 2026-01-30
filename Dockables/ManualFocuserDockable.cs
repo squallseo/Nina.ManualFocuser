@@ -54,14 +54,14 @@ namespace Nina.ManualFocuser.Dockables
         {
             var g = new GeometryGroup();
 
-            // 원(렌즈)
+                    // 원(렌즈)
             g.Children.Add(Geometry.Parse("M 8,0 A 8,8 0 1 1 7.999,0 Z"));
-            // 가운데 점
-            g.Children.Add(Geometry.Parse("M 9,8 A 2.1,2.1 0 1 1 8.999,8 Z"));
-            // 아래 축(막대)
-            g.Children.Add(Geometry.Parse("M 7,16 L 9,16 L 9,24 L 7,24 Z"));
-            // 좌우 작은 핸들
-            g.Children.Add(Geometry.Parse("M 2,18 L 6,18 L 6,20 L 2,20 Z"));
+                    // 가운데 점
+                     g.Children.Add(Geometry.Parse("M 9,8 A 2.1,2.1 0 1 1 8.999,8 Z"));
+                    // 아래 축(막대)
+                     g.Children.Add(Geometry.Parse("M 7,16 L 9,16 L 9,24 L 7,24 Z"));
+                    // 좌우 작은 핸들
+                     g.Children.Add(Geometry.Parse("M 2,18 L 6,18 L 6,20 L 2,20 Z"));
             g.Children.Add(Geometry.Parse("M 10,18 L 14,18 L 14,20 L 10,20 Z"));
 
             g.Freeze();
@@ -71,14 +71,14 @@ namespace Nina.ManualFocuser.Dockables
 
         private void TryAutoOpenOnce()
         {
-            // settings store는 이미 프로젝트에 있으니, 거기서 bool 하나만 저장한다고 가정
+                    // settings store는 이미 프로젝트에 있으니, 거기서 bool 하나만 저장한다고 가정
             var settings = ManualFocuserSettingsStore.Load();
             if (!settings.AutoOpenDockOnce) return;
 
             settings.AutoOpenDockOnce = false;
             ManualFocuserSettingsStore.Save(settings);
 
-            // UI 스레드에서 "열기"를 요청
+                    // UI 스레드에서 "열기"를 요청
             Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
             {
                 EnsureViewOnUIThread();

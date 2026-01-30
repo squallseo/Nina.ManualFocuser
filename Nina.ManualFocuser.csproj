@@ -9,6 +9,7 @@
 		<PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Folder Include="Images\" />
 	  <Folder Include="Screenshots\" />
 	</ItemGroup>
 	<Target Name="PostBuildCopyToNina" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
