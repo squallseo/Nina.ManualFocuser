@@ -16,3 +16,12 @@ Move the focuser immediately using those values
 Fine-adjust focus while visually inspecting stars, without switching tabs or changing Autofocus settings
 
 The goal is to make manual focus adjustment faster, simpler, and more intuitive during imaging sessions.
+
+## Screenshots
+
+### Idle state
+![Manual Focuser Input – Idle](Screenshots/idle.png)
+
+### Moving state
+![Manual Focuser Input – Moving](Screenshots/moving.png)
+
