@@ -7,6 +7,9 @@
 	<ItemGroup>
 		<PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Screenshots\" />
+	</ItemGroup>
 	<Target Name="PostBuildCopyToNina" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
 		<PropertyGroup>
 			<NinaPluginDir> $(LOCALAPPDATA)\NINA\Plugins\3.0.0\Nina.ManualFocuser\ </NinaPluginDir>
