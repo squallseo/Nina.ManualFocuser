@@ -4,12 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
 
 namespace Nina.ManualFocuser
 {
     [Export(typeof(IPluginManifest))]
+    [Guid("527217B9-B89A-4EDE-8996-2EC4F54DA5AD")]
     public sealed class Plugin : IPluginManifest
     {
         public string Name => "Manual Focuser Input";
@@ -19,7 +21,7 @@ namespace Nina.ManualFocuser
         public string License => "MIT";
         public string LicenseURL => "";
 
-        public string Homepage => "https://github.com/squallseo/Nina.ManualFocuser/blob/master/README.md";
+        public string Homepage => "https://github.com/squallseo/Nina.ManualFocuser/tree/master/README.md";
         public string Repository => "https://github.com/squallseo/Nina.ManualFocuser";
         public string ChangelogURL => "";
 
@@ -33,11 +35,10 @@ namespace Nina.ManualFocuser
         public IPluginDescription Descriptions => new SimpleDescription(
             shortDescription: "Manual focuser controls with direct input.",
             longDescription: "This plugin adds a dockable panel that allows users to enter absolute position and relative step values for focuser movement.\n\n" +
-                             "For detailed instructions and features, visit the [GitHub Repository](https://github.com/squallseo/Nina.ManualFocuser)\n" +
-                             "Check out the [Changelog](https://github.com/squallseo/Nina.ManualFocuser/blob/master/CHANGELOG.md) for updates.",
-            featuredImageUrl: "https://github.com/squallseo/Nina.ManualFocuser/blob/master/Images/logo.png",
-            screenshotUrl: "https://github.com/squallseo/Nina.ManualFocuser/blob/master/Screenshots/idle.png",
-            altScreenshotUrl: "https://github.com/squallseo/Nina.ManualFocuser/blob/master/Screenshots/moving.png"
+                             "For detailed instructions and features, visit the [GitHub Repository](https://github.com/squallseo/Nina.ManualFocuser)",
+            featuredImageUrl: "https://github.com/squallseo/Nina.ManualFocuser/blob/master/Images/logo.png?raw=true",
+            screenshotUrl: "https://github.com/squallseo/Nina.ManualFocuser/blob/master/Screenshots/idle.png?raw=true",
+            altScreenshotUrl: "https://github.com/squallseo/Nina.ManualFocuser/blob/master/Screenshots/moving.png?raw=true"
         );
 
 
