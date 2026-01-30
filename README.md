@@ -18,6 +18,8 @@ Fine-adjust focus while visually inspecting stars, without switching tabs or cha
 The goal is to make manual focus adjustment faster, simpler, and more intuitive during imaging sessions.
 
 ## Screenshots
+### Tool icon
+![Manual Focuser Icon](Screenshots/toolicon.png)
 
 ### Idle state
 ![Manual Focuser Input – Idle](Screenshots/idle.png)
