@@ -3,6 +3,7 @@
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
 		<Nullable>enable</Nullable>
+		<NoWarn>$(NoWarn);NU1701</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="NINA.Plugin" Version="3.2.0.9001" />
@@ -12,11 +13,21 @@
 	</ItemGroup>
 	<Target Name="PostBuildCopyToNina" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
 		<PropertyGroup>
-			<NinaPluginDir> $(LOCALAPPDATA)\NINA\Plugins\3.0.0\Nina.ManualFocuser\ </NinaPluginDir>
+			<NinaPluginDir>$(LOCALAPPDATA)\NINA\Plugins\3.0.0\Nina.ManualFocuser\</NinaPluginDir>
 		</PropertyGroup>
 		<MakeDir Directories="$(NinaPluginDir)" />
-		<!-- 프로젝트 산출물만 복사 -->
+		<!-- Debug 빌드인 경우 .dll과 .pdb 파일 복사 -->
 		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(NinaPluginDir)" SkipUnchangedFiles="true" />
 		<Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(NinaPluginDir)" SkipUnchangedFiles="true" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
 	</Target>
+
+	<Target Name="PostBuildCopyToNina" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+		<PropertyGroup>
+			<NinaPluginDir>$(LOCALAPPDATA)\NINA\Plugins\3.0.0\Nina.ManualFocuser\</NinaPluginDir>
+		</PropertyGroup>
+		<MakeDir Directories="$(NinaPluginDir)" />
+		<!-- Release 빌드인 경우 .dll 파일만 복사 -->
+		<Copy SourceFiles="$(TargetDir)$(TargetFileName)" DestinationFolder="$(NinaPluginDir)" SkipUnchangedFiles="true" />
+	</Target>
+
 </Project>

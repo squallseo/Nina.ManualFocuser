@@ -1,4 +1,6 @@
-﻿using Nina.ManualFocuser.Settings;
+﻿#pragma warning disable CS0067
+
+using Nina.ManualFocuser.Settings;
 using Nina.ManualFocuser.ViewModels;
 using Nina.ManualFocuser.Views;
 using NINA.Equipment.Interfaces.ViewModel;

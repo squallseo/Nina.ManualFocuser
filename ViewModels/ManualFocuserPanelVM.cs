@@ -1,4 +1,6 @@
-﻿using Nina.ManualFocuser.Settings;
+﻿#pragma warning disable CS0067
+
+using Nina.ManualFocuser.Settings;
 using NINA.Equipment.Interfaces.Mediator;
 using NINA.WPF.Base.Interfaces.Mediator; // IFocuserMediator 네임스페이스가 다르면 여기만 수정
 using System;
