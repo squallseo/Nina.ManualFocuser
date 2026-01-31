@@ -52,18 +52,17 @@ namespace Nina.ManualFocuser.Dockables
 
         private static GeometryGroup CreateFrozenGeometry()
         {
-            var g = new GeometryGroup();
+            var g = new GeometryGroup(); 
 
-                    // 원(렌즈)
-            g.Children.Add(Geometry.Parse("M 8,0 A 8,8 0 1 1 7.999,0 Z"));
-                    // 가운데 점
-                     g.Children.Add(Geometry.Parse("M 9,8 A 2.1,2.1 0 1 1 8.999,8 Z"));
-                    // 아래 축(막대)
-                     g.Children.Add(Geometry.Parse("M 7,16 L 9,16 L 9,24 L 7,24 Z"));
-                    // 좌우 작은 핸들
-                     g.Children.Add(Geometry.Parse("M 2,18 L 6,18 L 6,20 L 2,20 Z"));
-            g.Children.Add(Geometry.Parse("M 10,18 L 14,18 L 14,20 L 10,20 Z"));
-
+            g.Children.Add(Geometry.Parse("M 2,2 L 6,2 L 6,3 L 2,3 Z"));
+            g.Children.Add(Geometry.Parse("M 2,2 L 3,2 L 3,6 L 2,6 Z"));
+            g.Children.Add(Geometry.Parse("M 10,2 L 14,2 L 14,3 L 10,3 Z"));
+            g.Children.Add(Geometry.Parse("M 13,2 L 14,2 L 14,6 L 13,6 Z"));
+            g.Children.Add(Geometry.Parse("M 2,10 L 3,10 L 3,14 L 2,14 Z"));
+            g.Children.Add(Geometry.Parse("M 2,13 L 6,13 L 6,14 L 2,14 Z"));
+            g.Children.Add(Geometry.Parse("M 13,10 L 14,10 L 14,14 L 13,14 Z"));
+            g.Children.Add(Geometry.Parse("M 10,13 L 14,13 L 14,14 L 10,14 Z"));
+            g.Children.Add(Geometry.Parse("M 8,5.0 L 9.0,7.0 L 11.2,7.0 L 9.4,8.3 L 10.1,10.4 L 8,9.2 L 5.9,10.4 L 6.6,8.3 L 4.8,7.0 L 7.0,7.0 Z"));
             g.Freeze();
             return g;
         }
