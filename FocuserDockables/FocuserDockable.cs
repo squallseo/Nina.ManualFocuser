@@ -22,7 +22,6 @@ namespace Cwseo.NINA.Focuser.FocuserDockables {
         private int targetPosition = 100;
         private int userStep = 5;
 
-        private bool isBusy;
         private bool _moving;
         public FocuserInfo FocuserInfo { get; private set; } 
 
@@ -36,18 +35,6 @@ namespace Cwseo.NINA.Focuser.FocuserDockables {
             set { userStep = value; RaisePropertyChanged(nameof(UserStep)); }
         }
 
-        public bool IsBusy {
-            get => isBusy;
-            private set {
-                isBusy = value;
-                RaisePropertyChanged(nameof(IsBusy));
-                RaisePropertyChanged(nameof(IsNotBusy));
-
-                // ✅ RaiseCanExecuteChanged() 대신 이걸로 갱신
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
         public bool IsMoving {
             get => _moving;
             set {
@@ -56,7 +43,7 @@ namespace Cwseo.NINA.Focuser.FocuserDockables {
             }
         }
 
-        public bool IsNotBusy => !IsBusy;
+        public bool IsNotBusy => !IsMoving;
 
         // ✅ NINA Core.Utility 커맨드만 사용 (모호성 제거)
         public ICommand HaltFocuserCommand { get; private set; }
@@ -81,7 +68,6 @@ namespace Cwseo.NINA.Focuser.FocuserDockables {
             focuserMediator = focuser;
             focuserMediator.RegisterConsumer(this);
 
-            // Cancel
             // Cancel
             HaltFocuserCommand = new global::NINA.Core.Utility.RelayCommand(_ =>
             {
@@ -126,7 +112,7 @@ namespace Cwseo.NINA.Focuser.FocuserDockables {
         public void AutoFocusRunStarting() { }
 
         private bool CanMove() {
-            return FocuserInfo.Connected && !IsBusy;
+            return FocuserInfo.Connected && IsNotBusy;
         }
 
         private void ResetCts() {
@@ -137,36 +123,30 @@ namespace Cwseo.NINA.Focuser.FocuserDockables {
 
         private async Task<int> ExecuteMoveToAsync() {
             ResetCts();
-            IsBusy = true;
             IsMoving = true;
             try {
                 return await focuserMediator.MoveFocuser(TargetPosition, moveCts.Token);
             } finally {
-                IsBusy = false;
                 IsMoving = false;
             }
         }
 
         private async Task<int> ExecuteMoveInAsync() {
             ResetCts();
-            IsBusy = true;
             IsMoving = true;
             try {
                 return await focuserMediator.MoveFocuserRelative(-Math.Abs(UserStep), moveCts.Token);
             } finally {
-                IsBusy = false;
                 IsMoving = false;
             }
         }
 
         private async Task<int> ExecuteMoveOutAsync() {
             ResetCts();
-            IsBusy = true;
             IsMoving = true;
             try {
                 return await focuserMediator.MoveFocuserRelative(+Math.Abs(UserStep), moveCts.Token);
             } finally {
-                IsBusy = false;
                 IsMoving = false;
             }
         }
